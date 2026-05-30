@@ -1,89 +1,103 @@
-"""Tests for numerical longitudinal linearization."""
+"""Run trim and numerical linearization about the trim point.
+
+Execute from the project root:
+
+    python scripts/run_linearization_demo.py
+"""
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
+import sys
 
 import numpy as np
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_PATH = PROJECT_ROOT / "src"
+
+if str(SRC_PATH) not in sys.path:
+    sys.path.insert(0, str(SRC_PATH))
+
+from gnc_sim.config import load_json_config
 from gnc_sim.linearization import linearize_longitudinal
 from gnc_sim.models.uav_longitudinal import LongitudinalAircraft
 from gnc_sim.trim.longitudinal_trim import solve_longitudinal_trim
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+def _print_matrix(name: str, matrix: np.ndarray) -> None:
+    """Print a matrix with clean formatting."""
+    print(f"\n{name} =")
+    with np.printoptions(precision=6, suppress=True):
+        print(matrix)
 
 
-def load_default_config() -> dict:
-    """Load default project configuration."""
-    with (PROJECT_ROOT / "configs" / "uav_longitudinal.json").open(
-        "r",
-        encoding="utf-8",
-    ) as file:
-        return json.load(file)
-
-
-def get_default_trim_and_aircraft():
-    """Return the default aircraft and its level-flight trim result."""
-    config = load_default_config()
+def main() -> None:
+    """Solve trim, linearize the aircraft, print and save results."""
+    config = load_json_config(PROJECT_ROOT / "configs" / "uav_longitudinal.json")
     aircraft = LongitudinalAircraft(config["aircraft"])
 
-    trim = solve_longitudinal_trim(
+    trim_cfg = config["trim"]
+
+    trim_result = solve_longitudinal_trim(
         aircraft=aircraft,
-        target_airspeed_m_s=22.0,
-        target_altitude_m=100.0,
+        target_airspeed_m_s=trim_cfg["target_airspeed_m_s"],
+        target_altitude_m=trim_cfg["target_altitude_m"],
+        flight_path_angle_rad=np.radians(trim_cfg["flight_path_angle_deg"]),
+        initial_guess=(
+            trim_cfg["initial_guess"]["alpha_rad"],
+            trim_cfg["initial_guess"]["elevator_rad"],
+            trim_cfg["initial_guess"]["throttle"],
+        ),
         elevator_bounds_rad=tuple(config["aircraft"]["limits"]["elevator_rad"]),
+        residual_tolerance=trim_cfg["residual_tolerance"],
     )
 
-    assert trim.success
+    if not trim_result.success:
+        raise RuntimeError(f"Trim failed: {trim_result.message}")
 
-    return aircraft, trim
-
-
-def test_linearization_matrix_shapes() -> None:
-    """A and B should match the expected longitudinal state/input dimensions."""
-    aircraft, trim = get_default_trim_and_aircraft()
-
-    lin = linearize_longitudinal(
+    linearization = linearize_longitudinal(
         aircraft=aircraft,
-        trim_state=trim.state(),
-        trim_elevator_rad=trim.elevator_rad,
-        trim_throttle=trim.throttle,
+        trim_state=trim_result.state(),
+        trim_elevator_rad=trim_result.elevator_rad,
+        trim_throttle=trim_result.throttle,
     )
 
-    assert lin.A.shape == (5, 5)
-    assert lin.B.shape == (5, 2)
-    assert lin.eigenvalues.shape == (5,)
+    # Save linearization artifacts for the digital thread
+    output_json = PROJECT_ROOT / "outputs" / "logs" / "linearization_result_v0_3.json"
+    output_npz = PROJECT_ROOT / "outputs" / "logs" / "state_space_matrices_v0_3.npz"
 
+    output_json.parent.mkdir(parents=True, exist_ok=True)
 
-def test_linear_model_matches_small_nonlinear_perturbation() -> None:
-    """Linearized dynamics should approximate nearby nonlinear dynamics."""
-    aircraft, trim = get_default_trim_and_aircraft()
+    linearization.save_json(output_json)
 
-    lin = linearize_longitudinal(
-        aircraft=aircraft,
-        trim_state=trim.state(),
-        trim_elevator_rad=trim.elevator_rad,
-        trim_throttle=trim.throttle,
+    np.savez(
+        output_npz,
+        A=linearization.A,
+        B=linearization.B,
+        eigenvalues=linearization.eigenvalues,
     )
 
-    x0 = trim.state().as_array()
-    u0 = np.array([trim.elevator_rad, trim.throttle], dtype=float)
-    f0 = aircraft.dynamics(trim.state(), trim.elevator_rad, trim.throttle)
+    print("Longitudinal linearization result")
+    print("=" * 36)
+    print(f"Trim alpha: {trim_result.alpha_deg:.3f} deg")
+    print(f"Trim elevator: {trim_result.elevator_deg:.3f} deg")
+    print(f"Trim throttle: {trim_result.throttle:.4f}")
+    print("State vector: [u_m_s, w_m_s, q_rad_s, theta_rad, h_m]")
+    print("Input vector: [elevator_rad, throttle]")
 
-    dx = np.array([0.02, -0.01, 0.0005, 0.0004, 0.1], dtype=float)
-    du = np.array([0.0005, -0.001], dtype=float)
+    _print_matrix("A", linearization.A)
+    _print_matrix("B", linearization.B)
 
-    x_perturbed = x0 + dx
-    u_perturbed = u0 + du
+    print("\nEigenvalues of A:")
 
-    f_nonlinear = aircraft.dynamics(
-        state=trim.state().from_array(x_perturbed),
-        elevator_rad=float(u_perturbed[0]),
-        throttle=float(u_perturbed[1]),
-    )
+    for idx, eig in enumerate(linearization.eigenvalues, start=1):
+        print(f"  lambda_{idx}: {eig.real:+.6f} {eig.imag:+.6f}j")
 
-    f_linear = f0 + lin.A @ dx + lin.B @ du
+    print(f"\nSaved JSON: {output_json}")
+    print(f"Saved NPZ: {output_npz}")
+    print(f"JSON exists: {output_json.exists()}")
+    print(f"NPZ exists: {output_npz.exists()}")
 
-    assert np.allclose(f_nonlinear, f_linear, atol=5.0e-3)
+
+if __name__ == "__main__":
+    main()
