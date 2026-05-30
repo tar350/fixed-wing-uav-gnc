@@ -1,0 +1,95 @@
+{
+    "aircraft": {
+        "name": "Small Fixed-Wing UAV - Longitudinal Model",
+        "mass_kg": 13.5,
+        "iy_kg_m2": 1.13,
+        "wing_area_m2": 0.55,
+        "mean_chord_m": 0.19,
+        "max_thrust_n": 55.0,
+        "rho_kg_m3": 1.225,
+        "gravity_m_s2": 9.80665,
+        "aero": {
+            "cl0": 0.28,
+            "cl_alpha_per_rad": 3.45,
+            "cl_q": 0.0,
+            "cl_delta_e_per_rad": 0.15,
+            "cd0": 0.03,
+            "oswald_k": 0.08,
+            "cm0": 0.0,
+            "cm_alpha_per_rad": -0.38,
+            "cm_q": -3.6,
+            "cm_delta_e_per_rad": 0.8
+        },
+        "limits": {
+            "elevator_rad": [
+                -0.4363,
+                0.4363
+            ],
+            "throttle": [
+                0.0,
+                1.0
+            ],
+            "theta_command_rad": [
+                -0.2618,
+                0.2618
+            ]
+        }
+    },
+    "simulation": {
+        "dt_s": 0.02,
+        "t_final_s": 70.0,
+        "initial": {
+            "airspeed_m_s": 20.0,
+            "alpha_rad": 0.12,
+            "q_rad_s": 0.0,
+            "theta_rad": 0.12,
+            "altitude_m": 100.0
+        },
+        "commands": {
+            "altitude_m": 150.0,
+            "airspeed_m_s": 22.0
+        },
+        "wind": {
+            "enabled": true,
+            "vertical_gust_amplitude_m_s": 1.5,
+            "vertical_gust_frequency_rad_s": 0.8,
+            "vertical_gust_start_s": 8.0,
+            "vertical_gust_end_s": 35.0
+        }
+    },
+    "controller": {
+        "altitude_to_pitch_pid": {
+            "kp": 0.018,
+            "ki": 0.0008,
+            "kd": 0.01,
+            "integral_limit": 50.0
+        },
+        "pitch_to_elevator_pid": {
+            "kp": 3.2,
+            "ki": 0.15,
+            "kd": 0.65,
+            "integral_limit": 0.5
+        },
+        "airspeed_to_throttle_pid": {
+            "kp": 0.09,
+            "ki": 0.025,
+            "kd": 0.015,
+            "integral_limit": 10.0
+        },
+        "trim": {
+            "elevator_rad": 0.0,
+            "throttle": 0.35
+        }
+    },
+    "trim": {
+        "target_airspeed_m_s": 22.0,
+        "target_altitude_m": 100.0,
+        "flight_path_angle_deg": 0.0,
+        "initial_guess": {
+            "alpha_rad": 0.1,
+            "elevator_rad": 0.05,
+            "throttle": 0.35
+        },
+        "residual_tolerance": 1e-06
+    }
+}
