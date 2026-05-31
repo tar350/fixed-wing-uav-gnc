@@ -26,3 +26,12 @@
 - Waypoint tracking RMS cross-track error
 - EKF estimation error convergence
 - Monte Carlo uncertainty sweep
+
+## v0.9 EKF Navigation Test Plan
+
+### Test Case: EKF Navigation Demo
+
+Command:
+
+```powershell
+python scripts\run_ekf_navigation_demo.py

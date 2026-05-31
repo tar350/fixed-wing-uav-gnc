@@ -81,6 +81,39 @@
             "throttle": 0.35
         }
     },
+    "navigation": {
+        "random_seed": 42,
+        "sensor_noise": {
+            "airspeed_sigma_m_s": 0.3,
+            "alpha_sigma_deg": 0.5,
+            "gyro_q_sigma_deg_s": 0.2,
+            "pitch_sigma_deg": 0.5,
+            "altitude_sigma_m": 1.0
+        },
+        "ekf": {
+            "initial_covariance_diag": [
+                1.0,
+                1.0,
+                0.0012,
+                0.0012,
+                4.0
+            ],
+            "process_noise_diag": [
+                0.1,
+                0.1,
+                0.000076,
+                0.000019,
+                0.1
+            ],
+            "finite_difference_steps": [
+                0.001,
+                0.001,
+                0.00001,
+                0.00001,
+                0.01
+            ]
+        }
+    },
     "trim": {
         "target_airspeed_m_s": 22.0,
         "target_altitude_m": 100.0,
