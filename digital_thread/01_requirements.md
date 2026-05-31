@@ -23,3 +23,19 @@
 | GNC-NFR-003 | Project shall maintain a digital thread | Folder/document review | Started |
 | GNC-NFR-004 | Core functions shall be unit-testable | Pytest | Started |
 | GNC-NFR-005 | Versioned outputs shall be stored under `outputs/` | Artifact inspection | Started |
+## v0.7 Interactive Dashboard Requirements
+
+| ID | Requirement | Verification |
+|---|---|---|
+| GNC-REQ-010 | The software shall provide an interactive GUI for running nonlinear LQR simulations. | Run `streamlit run apps/gnc_dashboard.py` |
+| GNC-REQ-011 | The GUI shall allow the user to modify altitude command, airspeed command, initial conditions, simulation time, and wind disturbance settings. | Manual GUI inspection |
+| GNC-REQ-012 | The GUI shall display time histories, control inputs, tracking errors, summary metrics, and 2D aircraft motion. | Manual GUI inspection |
+| GNC-REQ-013 | The GUI shall allow simulation results to be downloaded as CSV. | Manual GUI inspection |
+## v0.7 Interactive Dashboard Test Plan
+
+### Test Case: Dashboard Launch
+
+Command:
+
+```powershell
+streamlit run apps\gnc_dashboard.py
