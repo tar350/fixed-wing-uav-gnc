@@ -409,7 +409,7 @@ def update_config_from_sidebar(base_config: dict) -> dict:
         "Gust amplitude [m/s]",
         min_value=0.0,
         max_value=5.0,
-        value=float(config["simulation"]["wind"].get("amplitude_m_s", 0.0)),
+        value=float(config["simulation"]["wind"].get("vertical_gust_amplitude_m_s", 0.0)),
         step=0.25,
     )
 
@@ -425,7 +425,7 @@ def update_config_from_sidebar(base_config: dict) -> dict:
     config["simulation"]["initial"]["theta_rad"] = float(np.radians(initial_pitch_deg))
 
     config["simulation"]["wind"]["enabled"] = wind_enabled
-    config["simulation"]["wind"]["amplitude_m_s"] = gust_amplitude
+    config["simulation"]["wind"]["vertical_gust_amplitude_m_s"] = gust_amplitude
 
     return config
 
