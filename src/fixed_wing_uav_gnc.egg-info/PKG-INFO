@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: fixed-wing-uav-gnc
-Version: 0.2.0
+Version: 0.5.0
 Summary: Python-based fixed-wing UAV GNC simulator
 Requires-Python: >=3.10
 Requires-Dist: numpy
