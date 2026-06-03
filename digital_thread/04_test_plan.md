@@ -35,3 +35,12 @@ Command:
 
 ```powershell
 python scripts\run_ekf_navigation_demo.py
+
+## v1.0 Estimator-in-the-Loop Test Plan
+
+### Test Case: Estimator-in-the-Loop Demo
+
+Command:
+
+```powershell
+python scripts\run_estimator_in_loop_demo.py

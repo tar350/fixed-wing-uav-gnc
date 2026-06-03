@@ -39,3 +39,21 @@ Command:
 
 ```powershell
 streamlit run apps\gnc_dashboard.py
+
+## v0.9 EKF Navigation Requirements
+
+| ID | Requirement | Verification |
+|---|---|---|
+| GNC-REQ-014 | The software shall simulate noisy longitudinal air-data, gyro, attitude, and barometric measurements. | Run `python scripts/run_ekf_navigation_demo.py` |
+| GNC-REQ-015 | The software shall estimate longitudinal state `[u, w, q, theta, h]` using an Extended Kalman Filter. | Run `pytest tests/test_ekf_navigation.py` |
+| GNC-REQ-016 | The software shall export EKF truth, measurement, estimate, and error histories. | Inspect `outputs/logs/ekf_navigation_results_v0_9.csv` |
+| GNC-REQ-017 | The software shall provide an interactive EKF dashboard for sensor-noise and estimation visualization. | Run `streamlit run apps/ekf_navigation_dashboard.py` |
+
+## v1.0 Estimator-in-the-Loop GNC Requirements
+
+| ID | Requirement | Verification |
+|---|---|---|
+| GNC-REQ-018 | The software shall close the loop between noisy sensors, EKF navigation, LQR control, and nonlinear aircraft dynamics. | Run `python scripts/run_estimator_in_loop_demo.py` |
+| GNC-REQ-019 | The LQR controller shall use EKF-estimated states instead of truth states. | Inspect `src/gnc_sim/simulation/estimator_in_loop.py` |
+| GNC-REQ-020 | The software shall log truth states, noisy measurements, EKF estimates, controls, tracking errors, and estimation errors. | Inspect `outputs/logs/estimator_in_loop_results_v1_0.csv` |
+| GNC-REQ-021 | The software shall generate plots and animation for estimator-in-the-loop behavior. | Inspect `outputs/plots` and `outputs/animations` |
